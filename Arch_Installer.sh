@@ -74,5 +74,5 @@ init_progress_file
 load_progress
 declare -p PROGRESS_ARRAY
 
-download_config_folder
+verify_boot_mode
         
