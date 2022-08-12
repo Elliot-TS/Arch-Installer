@@ -1,0 +1,1 @@
+declare -Ag PROGRESS_ARRAY=([verify_boot]="1" )
