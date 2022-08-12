@@ -31,10 +31,27 @@ init_progress_file()
 
 
 ##############################################
+# Installation
+# Initial installation steps were adapted
+# from https://medium.com/hacker-toolbelt/arch-install-with-full-disk-encryption-6192e9635281
+##############################################
+
+# Download Configuration Files from Github
+download_config_folder()
+{
+    # Check if this step was completed
+    if [ $((${PROGRESS_ARRAY[download_config_folder]})) == 0];
+    then
+        echo "Okay, let's download... (todo)"
+    fi
+}
+
+##############################################
 # Main
 ##############################################
 init_progress_file
 load_progress
 declare -p PROGRESS_ARRAY
-echo ${PROGRESS_ARRAY[verify_boot]}
+
+download_config_folder
         
