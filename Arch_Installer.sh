@@ -36,4 +36,5 @@ init_progress_file()
 init_progress_file
 load_progress
 declare -p PROGRESS_ARRAY
+echo $PROGRESS_ARRAY[verify_boot]
         
