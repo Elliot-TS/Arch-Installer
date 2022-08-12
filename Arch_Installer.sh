@@ -56,7 +56,7 @@ verify_boot_mode()
                 $PROGRESS_ARRAY[verify_boot_mode]=1;
             else
                 echo "---- ERROR: BIOS is currently unsupported.  Must use UEFI."
-                $PROGRESS_ARRAY[verify_boot_mode]=1;
+                ${PROGRESS_ARRAY[verify_boot_mode]}=1;
                 $ABORT=1;
             fi
 
