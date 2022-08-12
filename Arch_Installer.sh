@@ -6,8 +6,9 @@
 progress_file_name="Arch_Installer_Progress.txt"
 declare -A PROGRESS_ARRAY
 PROGRESS_ARRAY=(
-    [verify_boot]=0
+    [verify_boot_mode]=0
 )
+ABORT=0
 
 # Save the current progress
 save()
@@ -36,14 +37,34 @@ init_progress_file()
 # from https://medium.com/hacker-toolbelt/arch-install-with-full-disk-encryption-6192e9635281
 ##############################################
 
-# Download Configuration Files from Github
-download_config_folder()
+# Verify Boot Mode
+verify_boot_mode()
 {
-    # Check if this step was completed
-    if [ $((${PROGRESS_ARRAY[download_config_folder]})) == 0 ];
+    if [ $ABORT == 0 ]
     then
-        echo "Okay, let's download... (todo)"
+        echo "-------------------"
+        echo "Verifying Boot Mode"
+        echo "-------------------"
+
+        if [ ${PROGRESS_ARRAY[verify_boot_mode]} == 0 ];
+        then
+            # Check if the computer uses UEFI (no error) or BIOS (error)
+            ls /sys/firmware/efi/efivars
+            if [ $? == 0 ]
+            then
+                echo "---- Boot mode confirmed to be UEFI"
+                $PROGRESS_ARRAY[verify_boot_mode]=1;
+            else
+                echo "---- ERROR: BIOS is currently unsupported.  Must use UEFI."
+                $PROGRESS_ARRAY[verify_boot_mode]=1;
+                $ABORT=1;
+            fi
+
+        else
+            echo "Already Done"
+        fi
     fi
+    save
 }
 
 ##############################################
