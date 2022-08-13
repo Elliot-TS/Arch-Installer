@@ -401,3 +401,6 @@ configure_clock
 load_luks_modules
 get_disk_name
 partition_drive 
+encrypt_root_partition
+format_partitions
+create_swap_file
