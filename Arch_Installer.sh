@@ -9,6 +9,8 @@ PROGRESS_ARRAY=(
     [verify_boot_mode]=0
     [configure_clock]=0
     [load_luks_modules]=0
+    [get_disk_name]=0
+    [partition_drive]=0
 )
 ABORT=0
 
@@ -43,9 +45,9 @@ skeleton_function()
 {
     if [ $ABORT == 0 ]
     then
-        echo "-------------"
-        echo "Title"
-        echo "-------------"
+        echo -e "-------------"
+        echo -e "Title"
+        echo -e "-------------\n"
 
         if [ ${PROGRESS_ARRAY[skeleton_function]} == 0 ]
         then
@@ -55,15 +57,15 @@ skeleton_function()
             # Catch error
             if [ $? -ne 0 ]
             then 
-                echo "--- ERROR: Message. ---"
+                echo -e "--- ERROR: Message. ---\n"
                 ABORT=1
             else
-                echo "--- Success ---"
+                echo -e "--- Success ---\n"
             fi
             # Save progress
             PROGRESS_ARRAY[skeleton_function]=1
         else
-            echo "Already done"
+            echo -e "Already done\n"
         fi
     fi
     save
@@ -74,9 +76,9 @@ verify_boot_mode()
 {
     if [ $ABORT == 0 ]
     then
-        echo "-------------------"
-        echo "Verifying Boot Mode"
-        echo "-------------------"
+        echo -e "-------------------"
+        echo -e "Verifying Boot Mode"
+        echo -e "-------------------\n"
 
         if [ ${PROGRESS_ARRAY[verify_boot_mode]} == 0 ]
         then
@@ -86,16 +88,16 @@ verify_boot_mode()
             # Catch error
             if [ $? -ne 0 ]
             then 
-                echo "--- ERROR: Boot Mode is BIOS.  Must be UEFI.  Aborting. ---"
+                echo -e "--- ERROR: Boot Mode is BIOS.  Must be UEFI.  Aborting. ---\n"
                 ABORT=1
             else
-                echo "--- Boot Mode is UEFI ---"
+                echo -e "--- Boot Mode is UEFI ---\n"
             fi
 
             # Save progress
             PROGRESS_ARRAY[verify_boot_mode]=1
         else
-            echo "Already done"
+            echo -e "Already done\n"
         fi
     fi
     save
@@ -106,29 +108,34 @@ configure_clock()
 {
     if [ $ABORT == 0 ]
     then
-        echo "----------------"
-        echo "Configure Clock"
-        echo "----------------"
+        echo -e "----------------"
+        echo -e "Configure Clock"
+        echo -e "----------------\n"
 
         if [ ${PROGRESS_ARRAY[configure_clock]} == 0 ]
         then
-            # DO STUFF
-            echo "--- Setting NTP to True ---"
-            timedatectl set-ntp true
+            # Set NTP to true
+            echo -e "--- Setting NTP to True ---\n"
+            if [[ $(timedatectl show | grep "NTP=yes") != "" ]]
+            then
+                echo -e "NTP already set to true\n"
+            else
+                timedatectl set-ntp true
+            fi
 
             # Catch error
             # TODO: if there are multiple configurations later, create a separate error for each command
             if [ $? -ne 0 ]
             then 
-                echo "--- ERROR: Could not configure clock. ---"
+                echo -e "--- ERROR: Could not configure clock. ---\n"
                 ABORT=1
             else
-                echo "--- Finished configuring clock ---"
+                echo -e "--- Finished configuring clock ---\n"
             fi
             # Save progress
             PROGRESS_ARRAY[configure_clock]=1
         else
-            echo "Already done"
+            echo -e "Already done\n"
         fi
     fi
     save
@@ -138,9 +145,9 @@ load_luks_modules()
 {
     if [ $ABORT == 0 ]
     then
-        echo "---------------------------"
-        echo "Prepare for LUKS encryption"
-        echo "---------------------------"
+        echo -e "---------------------------"
+        echo -e "Prepare for LUKS encryption"
+        echo -e "---------------------------\n"
 
         if [ ${PROGRESS_ARRAY[load_luks_modules]} == 0 ]
         then
@@ -150,7 +157,7 @@ load_luks_modules()
             # Catch error
             if [ $? -ne 0 ]
             then 
-                echo "--- ERROR: Could not load dm-crypt. ---"
+                echo -e "--- ERROR: Could not load dm-crypt. ---\n"
                 ABORT=1
             fi
 
@@ -160,24 +167,100 @@ load_luks_modules()
             # Catch error
             if [ $? -ne 0 ]
             then 
-                echo "--- ERROR: Could not load dm-mod. ---"
+                echo -e "--- ERROR: Could not load dm-mod. ---\n"
                 ABORT=1
             fi
 
             # If neither failed
             if [ $ABORT == 0 ] 
             then
-                echo "--- Success ---"
+                echo -e "--- Success ---\n"
             fi
             # Save progress
             PROGRESS_ARRAY[load_luks_modules]=1
         else
-            echo "Already done"
+            echo -e "Already done\n"
         fi
     fi
     save
 }
 
+# Get Disk Name
+DISK_NAME=sdn
+get_disk_name()
+{
+    if [ $ABORT == 0 ]
+    then
+        echo -e "-------------"
+        echo -e "Get Disk Name"
+        echo -e "-------------\n"
+
+        if [ ${PROGRESS_ARRAY[get_disk_name]} == 0 ]
+        then
+            # Get disk name 
+            if [[ $(lsblk | grep nvme0n1) != "" ]]
+            then
+                echo -e "--- Disk name is nvme0n1 ---\n"
+                DISK_NAME=nvme0n1
+            elif [[ $(lsblk | grep mmcbkl0) != "" ]]
+            then
+                echo -e "--- Disk name is mmcblk0 ---\n"
+                DISK_NAME=mmcblk0
+            elif [[ $(lsbkl | grep sda) != "" ]]
+            then
+                echo -e "--- Disk name is sda ---\n"
+                DISK_NAME=sda
+            else
+                echo -e "--- ERROR: Disk name not found. ---\n"
+                ABORT=1
+            fi
+
+            # Save progress
+            PROGRESS_ARRAY[get_disk_name]=1
+        else
+            echo -e "Already done\n"
+        fi
+    fi
+    save
+}
+
+partition_drive()
+{
+    if [ $ABORT == 0 ]
+    then
+        echo -e "-------------------"
+        echo -e "Partitioning Drive"
+        echo -e "-------------------\n"
+
+        if [[ ${PROGRESS_ARRAY[partition_drive]} == 0 ]]
+        then
+            # Save the current partition table
+            echo -e "--- Saving partition tabl to ./partition.dump ---"
+            echo -e "--- (to restore the partition table, run: sfdisk /dev/$DISK_NAME < partition.dump ---\n"
+            sfdisk -d /dev/$DISK_NAME > partition.dump
+
+            # Check if the command failed (i.e. there was no partition table)
+            if [ $(echo $?) -ne 0 ]
+            then
+                # First is a 256MB UEFI parttion
+                # Second is a 512MB partition for boot
+                # Third is the root partition
+                echo -e ",256M,U\n,512M,L\n,,+\n" | sfdisk /dev/$DISK_NAME
+            else
+                # TODO: Potentially ask if the user wants to override the partition table
+                # since it was already saved
+                echo -e "--- ERROR: Disk is already partitioned.  Aborting. ---\n"
+                ABORT=1
+            fi
+
+            # Save progress
+            PROGRESS_ARRAY[skeleton_function]=1
+        else
+            echo -e "Already done\n"
+        fi
+    fi
+    save
+}
 ##############################################
 # Main
 ##############################################
@@ -188,4 +271,5 @@ declare -p PROGRESS_ARRAY
 verify_boot_mode
 configure_clock
 load_luks_modules
-        
+get_disk_name
+partition_drive 
