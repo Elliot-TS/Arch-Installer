@@ -467,10 +467,11 @@ configure_locale()
             select region in "${Regions[@]}"
             do
                 cd /usr/share/zoneinfo/$region
-                Cities=($(ls -d */))
+                echo "$region"
+                Cities=($(ls -d *))
                 select city in "${Cities[@]}"
                 do
-                    ln -sf "/usr/share/zoneinfo/$region/$city" /etc/localtime 
+                    ln -sf "/usr/share/zoneinfo/$region$city" /etc/localtime 
                 done
             done
             hwclock --systohc
