@@ -12,6 +12,8 @@ PROGRESS_ARRAY=(
     [get_disk_name]=0
     [partition_drive]=0
     [encrypt_root_partition]=0
+    [format_partitions]=0
+    [create_swap_file]=0
 )
 ABORT=0
 
@@ -323,7 +325,7 @@ format_partitions()
                 ABORT=1
             else
                 # Get the second partition
-                PART2=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/. a){print a[1]}' | sed -n '2p'
+                PART2=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/. a){print a[1]}' | sed -n '2p')
                 # Catch errors
                 if [ $? -ne 0 ]
                 then 
