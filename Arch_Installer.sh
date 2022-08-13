@@ -53,7 +53,7 @@ verify_boot_mode()
             if [ $? == 0 ]
             then
                 echo "---- Boot mode confirmed to be UEFI"
-                $PROGRESS_ARRAY[verify_boot_mode]=1
+                ${PROGRESS_ARRAY[verify_boot_mode]}=1
             else
                 echo "---- ERROR: BIOS is currently unsupported.  Must use UEFI."
                 ${PROGRESS_ARRAY[verify_boot_mode]}=1
