@@ -254,7 +254,7 @@ partition_drive()
             fi
 
             # Save progress
-            PROGRESS_ARRAY[skeleton_function]=1
+            PROGRESS_ARRAY[partition_drive]=1
         else
             echo -e "Already done\n"
         fi
