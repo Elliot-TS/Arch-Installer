@@ -80,6 +80,8 @@ configure_clock()
 
             echo "Setting NTP to true"
             timedatectl set-ntp true
+
+            PROGRESS_ARRAY[configure_clock]=1
         fi
     fi
     save
@@ -97,6 +99,8 @@ load_luks_modules()
             echo "Loading dm-crypt and dm-mod kernel modules"
             modprobe dm-crypt
             modprobe dm-mod
+
+            PROGRESS_ARRAY[load_luks_modules]=1
         fi
     fi
     save
