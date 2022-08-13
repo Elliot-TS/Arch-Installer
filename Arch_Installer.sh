@@ -317,7 +317,7 @@ format_partitions()
             echo -e "--- Getting Partition Names ---\n"
 
             # Get the first partition
-            PART1=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/. a){print a[1]}' | sed -n '1p'
+            PART1=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/. a){print a[1]}' | sed -n '1p')
             # Catch error
             if [ $? -ne 0 ]
             then 
