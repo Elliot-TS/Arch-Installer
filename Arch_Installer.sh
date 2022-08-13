@@ -166,6 +166,7 @@ load_luks_modules()
 
             # If neither failed
             if [ $ABORT == 0 ] 
+            then
                 echo "--- Success ---"
             fi
             # Save progress
