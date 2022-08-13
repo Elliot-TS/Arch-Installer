@@ -62,7 +62,9 @@ skeleton_function()
             fi
             # Save progress
             PROGRESS_ARRAY[skeleton_function]=1
-        else; echo "Already done"; fi
+        else
+            echo "Already done"
+        fi
     fi
     save
 }
@@ -92,7 +94,9 @@ verify_boot_mode()
 
             # Save progress
             PROGRESS_ARRAY[verify_boot_mode]=1
-        else; echo "Already done"; fi
+        else
+            echo "Already done"
+        fi
     fi
     save
 }
@@ -123,7 +127,9 @@ configure_clock()
             fi
             # Save progress
             PROGRESS_ARRAY[configure_clock]=1
-        else; echo "Already done"; fi
+        else
+            echo "Already done"
+        fi
     fi
     save
 }
@@ -164,7 +170,9 @@ load_luks_modules()
             fi
             # Save progress
             PROGRESS_ARRAY[load_luks_modules]=1
-        else; echo "Already done"; fi
+        else
+            echo "Already done"
+        fi
     fi
     save
 }
