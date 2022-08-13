@@ -7,6 +7,7 @@ progress_file_name="Arch_Installer_Progress.txt"
 declare -A PROGRESS_ARRAY
 PROGRESS_ARRAY=(
     [verify_boot_mode]=0
+    [configure_clock]=0
 )
 ABORT=0
 
