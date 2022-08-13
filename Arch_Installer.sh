@@ -114,6 +114,6 @@ load_progress
 declare -p PROGRESS_ARRAY
 
 verify_boot_mode
-#configure_clock
-#load_luks_modules
+configure_clock
+load_luks_modules
         
