@@ -109,7 +109,7 @@ init_progress_file
 load_progress
 declare -p PROGRESS_ARRAY
 
-verify_boot_mode
-configure_clock
-load_luks_modules
+#verify_boot_mode
+#configure_clock
+#load_luks_modules
         
