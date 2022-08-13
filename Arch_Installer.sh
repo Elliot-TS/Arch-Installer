@@ -304,6 +304,7 @@ encrypt_root_partition()
     save
 }
 
+
 format_partitions()
 {
     if [ $ABORT == 0 ]
