@@ -280,7 +280,7 @@ encrypt_root_partition()
         if [ ${PROGRESS_ARRAY[encrypt_root_partition]} == 0 ]
         then
             # Get the name of the last partition
-            PARTITION_NAME=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/. a){print a[1]}' | tail -n1)
+            PARTITION_NAME=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/, a){print a[1]}' | tail -n1)
 
             # Catch error
             if [ $? -ne 0 ]
@@ -318,7 +318,7 @@ format_partitions()
             echo -e "--- Getting Partition Names ---\n"
 
             # Get the first partition
-            PART1=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/. a){print a[1]}' | sed -n '1p')
+            PART1=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/, a){print a[1]}' | sed -n '1p')
             # Catch error
             if [ $? -ne 0 ]
             then 
@@ -326,7 +326,7 @@ format_partitions()
                 ABORT=1
             else
                 # Get the second partition
-                PART2=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/. a){print a[1]}' | sed -n '2p')
+                PART2=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/, a){print a[1]}' | sed -n '2p')
                 # Catch errors
                 if [ $? -ne 0 ]
                 then 
