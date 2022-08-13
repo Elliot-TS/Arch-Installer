@@ -11,6 +11,7 @@ PROGRESS_ARRAY=(
     [load_luks_modules]=0
     [get_disk_name]=0
     [partition_drive]=0
+    [encrypt_root_partition]=0
 )
 ABORT=0
 
@@ -206,6 +207,8 @@ get_disk_name()
             elif [[ $(lsblk | grep mmcbkl0) != "" ]]
             then
                 echo -e "--- Disk name is mmcblk0 ---\n"
+                echo -e "--- ERROR: mmcblk0 is not currently supported.  Aborting ---\n"
+                ABORT=1
                 DISK_NAME=mmcblk0
             elif [[ $(lsblk | grep sda) != "" ]]
             then
@@ -236,7 +239,7 @@ partition_drive()
         if [[ ${PROGRESS_ARRAY[partition_drive]} == 0 ]]
         then
             # Save the current partition table
-            echo -e "--- Saving partition tabl to ./partition.dump ---"
+            echo -e "--- Saving partition table to ./partition.dump ---"
             echo -e "--- (to restore the partition table, run: sfdisk /dev/$DISK_NAME < partition.dump ---\n"
             sfdisk -d /dev/$DISK_NAME > partition.dump
 
@@ -256,6 +259,127 @@ partition_drive()
 
             # Save progress
             PROGRESS_ARRAY[partition_drive]=1
+        else
+            echo -e "Already done\n"
+        fi
+    fi
+    save
+}
+
+# Encrypt Root Partition
+encrypt_root_partition()
+{
+    if [ $ABORT == 0 ]
+    then
+        echo -e "-------------------------"
+        echo -e "Encrypting Root Partition"
+        echo -e "-------------------------\n"
+
+        if [ ${PROGRESS_ARRAY[encrypt_root_partition]} == 0 ]
+        then
+            # Get the name of the last partition
+            PARTITION_NAME=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/. a){print a[1]}' | tail -n1)
+
+            # Catch error
+            if [ $? -ne 0 ]
+            then 
+                echo -e "--- ERROR: Could not find root partition name. ---\n"
+                ABORT=1
+            else
+                echo -e "--- Encrypting partition $PARTITION_NAME ---\n"
+                cryptsetup luksFormat -v -s 512 -h sha512 /dev/$PARTITION_NAME
+
+                echo -e "--- Opening encrypted partition ---\n"
+                cryptsetup open /dev/$PARTITION_NAME luks_root
+                
+            fi
+            # Save progress
+            PROGRESS_ARRAY[encrypt_root_partition]=1
+        else
+            echo -e "Already done\n"
+        fi
+    fi
+    save
+}
+
+format_partitions()
+{
+    if [ $ABORT == 0 ]
+    then
+        echo -e "---------------------"
+        echo -e "Formatting Partitions"
+        echo -e "---------------------\n"
+
+        if [ ${PROGRESS_ARRAY[format_partitions]} == 0 ]
+        then
+            echo -e "--- Getting Partition Names ---\n"
+
+            # Get the first partition
+            PART1=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/. a){print a[1]}' | sed -n '1p'
+            # Catch error
+            if [ $? -ne 0 ]
+            then 
+                echo -e "--- ERROR: Could not find first partition. ---\n"
+                ABORT=1
+            else
+                # Get the second partition
+                PART2=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/. a){print a[1]}' | sed -n '2p'
+                # Catch errors
+                if [ $? -ne 0 ]
+                then 
+                    echo -e "--- ERROR: Could not find second partition. ---\n"
+                    ABORT=1
+                else
+                    # Format all partitions
+                    # TODO: In the future, if you're feeling brave, try the BtrFS for luks_root
+                    echo -e "--- Formatting partitions ---\n"
+                    mkfs.vfat -n "EFI System Partition" /dev/$PART1
+                    mkfs.ext4 -L boot /dev/$PART2
+                    mkfs.ext4 -L root /dev/mapper/luks_root
+
+                    echo -e "--- Mounting Partitions ---\n"
+                    mount /dev/mapper/luks_root/mnt
+                    mkdir /mnt/boot
+                    mount /dev/$PART2 /mnt/boot
+                    mkdir /mnt/boot/efi
+                    mount /dev/$PART1 /mnt/boot/efi
+                fi
+            fi
+            # Save progress
+            PROGRESS_ARRAY[format_partitions]=1
+        else
+            echo -e "Already done\n"
+        fi
+    fi
+    save
+}
+
+create_swap_file()
+{
+    if [ $ABORT == 0 ]
+    then
+        echo -e "-------------------"
+        echo -e "Creating SWAP File"
+        echo -e "-------------------\n"
+
+        if [ ${PROGRESS_ARRAY[create_swap_file]} == 0 ]
+        then
+            cd /mnt
+            dd if=/dev/zero of=swap bs=1M count=1024
+            mkswap swap
+            swapon swap
+            chmod 0600 swap
+
+            # Catch error
+            if [ $? -ne 0 ]
+            then 
+                echo -e "--- ERROR ---\n"
+                ABORT=1
+            else
+                echo -e "--- Success ---\n"
+            fi
+            # Save progress
+            PROGRESS_ARRAY[create_swap_file]=1
         else
             echo -e "Already done\n"
         fi
