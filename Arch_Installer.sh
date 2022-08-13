@@ -335,13 +335,16 @@ format_partitions()
                 else
                     # Format all partitions
                     # TODO: In the future, if you're feeling brave, try the BtrFS for luks_root
-                    echo -e "--- Formatting partitions ---\n"
+                    echo -e "--- Formatting partitions ---"
+                    echo -e "--- ($PART1, $PART2, and luks_root) ---"
+                    echo -e "--- Press enter to continue ---\n"
+                    read wait
                     mkfs.vfat -n "EFI System Partition" /dev/$PART1
                     mkfs.ext4 -L boot /dev/$PART2
                     mkfs.ext4 -L root /dev/mapper/luks_root
 
                     echo -e "--- Mounting Partitions ---\n"
-                    mount /dev/mapper/luks_root/mnt
+                    mount /dev/mapper/luks_root /mnt
                     mkdir /mnt/boot
                     mount /dev/$PART2 /mnt/boot
                     mkdir /mnt/boot/efi
