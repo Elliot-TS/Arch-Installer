@@ -195,6 +195,7 @@ get_disk_name()
         echo -e "Get Disk Name"
         echo -e "-------------\n"
 
+
         if [ ${PROGRESS_ARRAY[get_disk_name]} == 0 ]
         then
             # Get disk name 
