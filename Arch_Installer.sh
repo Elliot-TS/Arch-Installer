@@ -82,6 +82,7 @@ configure_clock()
             timedatectl set-ntp true
         fi
     fi
+    save
 }
 
 load_luks_modules()
@@ -98,6 +99,7 @@ load_luks_modules()
             modprobe dm-mod
         fi
     fi
+    save
 }
 
 ##############################################
@@ -108,4 +110,6 @@ load_progress
 declare -p PROGRESS_ARRAY
 
 verify_boot_mode
+configure_clock
+load_luks_modules
         
