@@ -17,6 +17,7 @@ PROGRESS_ARRAY=(
     [set_up_arch]=0
     [configure_locale]=0
     [configure_network]=0
+    [prepare_boot_loader]=0
 )
 ABORT=0
 
@@ -471,7 +472,9 @@ configure_locale()
                 Cities=($(ls -d *))
                 select city in "${Cities[@]}"
                 do
+                    echo "/usr/shar/zoneinfo/$region$city"
                     ln -sf "/usr/share/zoneinfo/$region$city" /etc/localtime 
+                    break;
                 done
             done
             hwclock --systohc
@@ -520,8 +523,12 @@ prepare_boot_loader()
     then
         echo -e "------------------------------"
         echo -e "Preparing boot loader for LUKS"
-        echo -e "----------------------------\n"
+        echo -e "------------------------------\n"
 
+        # Make sure we get the disk name
+        PROGRESS_ARRAY[get_disk_name]=0
+        get_disk_name
+        
         if [ ${PROGRESS_ARRAY[prepare_boot_loader]} == 0 ]
         then
             # Get third partition name 
