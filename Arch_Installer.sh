@@ -293,6 +293,12 @@ encrypt_root_partition()
             else
                 echo -e "--- Encrypting partition $PARTITION_NAME ---\n"
                 cryptsetup luksFormat -v -s 512 -h sha512 /dev/$PARTITION_NAME
+                # Repeat incase it fails (i.e. wrong password)
+                while [ $? -ne 0 ]
+                do
+                    echo -e "--- Encrypting partition $PARTITION_NAME failed.  Trying again. ---\n"
+                    cryptsetup luksFormat -v -s 512 -h sha512 /dev/$PARTITION_NAME
+                done
 
                 echo -e "--- Opening encrypted partition ---\n"
                 cryptsetup open /dev/$PARTITION_NAME luks_root
