@@ -207,7 +207,7 @@ get_disk_name()
             then
                 echo -e "--- Disk name is mmcblk0 ---\n"
                 DISK_NAME=mmcblk0
-            elif [[ $(lsbkl | grep sda) != "" ]]
+            elif [[ $(lsblk | grep sda) != "" ]]
             then
                 echo -e "--- Disk name is sda ---\n"
                 DISK_NAME=sda
