@@ -44,20 +44,20 @@ verify_boot_mode()
     then
         echo "-------------------"
         echo "Verifying Boot Mode"
-        echo "-------------------"
+        echo "------ -------------"
 
-        if [ ${PROGRESS_ARRAY[verify_boot_mode]} == 0 ];
+        if [ ${PROGRESS_ARRAY[verify_boot_mode]} == 0 ]
         then
             # Check if the computer uses UEFI (no error) or BIOS (error)
             ls /sys/firmware/efi/efivars
             if [ $? == 0 ]
             then
                 echo "---- Boot mode confirmed to be UEFI"
-                $PROGRESS_ARRAY[verify_boot_mode]=1;
+                $PROGRESS_ARRAY[verify_boot_mode]=1
             else
                 echo "---- ERROR: BIOS is currently unsupported.  Must use UEFI."
-                ${PROGRESS_ARRAY[verify_boot_mode]}=1;
-                $ABORT=1;
+                ${PROGRESS_ARRAY[verify_boot_mode]}=1
+                $ABORT=1
             fi
 
         else
@@ -65,6 +65,39 @@ verify_boot_mode()
         fi
     fi
     save
+}
+
+# Configure Clock
+configure_clock()
+{
+    if [ $ABORT == 0 ]
+    then
+        if [ ${PROGRESS_ARRAY[configure_clock]} == 0 ]
+        then
+            echo "-----------------"
+            echo "Configuring Clock"
+            echo "-----------------"
+
+            echo "Setting NTP to true"
+            timedatectl set-ntp true
+        fi
+    fi
+}
+
+load_luks_modules()
+{
+    if [ $ABORT == 0 ]
+    then
+        if [ ${PROGRESS_ARRAY[load_luks_modules]} == 0 ]
+        then
+            echo "-----------------------------"
+            echo "Preparing for LUKS encryption"
+            echo "-----------------------------"
+            echo "Loading dm-crypt and dm-mod kernel modules"
+            modprobe dm-crypt
+            modprobe dm-mod
+        fi
+    fi
 }
 
 ##############################################
