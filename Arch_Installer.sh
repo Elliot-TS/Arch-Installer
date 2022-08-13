@@ -14,6 +14,9 @@ PROGRESS_ARRAY=(
     [encrypt_root_partition]=0
     [format_partitions]=0
     [create_swap_file]=0
+    [set_up_arch]=0
+    [configure_locale]=0
+    [configure_network]=0
 )
 ABORT=0
 
@@ -392,6 +395,147 @@ create_swap_file()
     fi
     save
 }
+
+set_up_arch()
+{
+    if [ $ABORT == 0 ]
+    then
+        echo -e "---------------------"
+        echo -e "Setting Up Arch Linux"
+        echo -e "---------------------\n"
+
+        if [ ${PROGRESS_ARRAY[set_up_arch]} == 0 ]
+        then
+            # Install Base Packages
+            pacstrap -i /mnt base base-devel efibootmgr grub linux linux-firmwar ntworkmanagr sudo vi vim bash-completion nano
+
+            # Catch error
+            if [ $? -ne 0 ]
+            then 
+                echo -e "--- ERROR: Could not install base packages. ---\n"
+                ABORT=1
+            else
+                # Configure fstab
+                genfstab -U /mnt >> /mnt/etc/fstab
+
+                # Catch error
+                if [ $? -ne 0 ]
+                then 
+                    echo -e "--- ERROR: Could not generate fstab. ---\n"
+                    ABORT=1
+                else
+                    # Change root into new system
+                    arch-chroot /mnt
+
+                    if [ $? -ne 0 ]
+                    then
+                        echo -e "--- ERROR: Could not change root into /mnt ---\n"
+                    fi
+                fi
+            fi
+            # Save progress
+            PROGRESS_ARRAY[set_up_arch]=1
+        else
+            echo -e "Already done\n"
+        fi
+    fi
+    save
+}
+
+# Configure Arch
+configure_locale()
+{
+    if [ $ABORT == 0 ]
+    then
+        echo -e "--------------"
+        echo -e "Configure Arch"
+        echo -e "--------------\n"
+
+        if [ ${PROGRESS_ARRAY[configure_locale]} == 0 ]
+        then
+            # Time Zone
+            echo -e "--- Please Select Your Time Zone ---"
+            old_dir=$(pwd)
+            cd /usr/share/zoneinfo
+            Regions=($(ls -d */))
+            select region in "${Regions[@]}"
+            do
+                cd $region
+                Cities=($(ls -d */))
+                select city in "${Cities[@]}"
+                do
+                    ln -sf "/usr/share/zoneinfo/$region/$city" /etc/localtime 
+                done
+            done
+            hwclock --systohc
+
+            cd "$old_dir"
+            
+            # Add en_US.UTF-8 locale
+            echo -e "--- Adding en_US.UTF-8 UTF-8 locale ---\n"
+            echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+            locale-gen
+            echo "LANG=en_US.UTF-8" >> /etc/locale.conf
+            
+            # Save progress
+            PROGRESS_ARRAY[configure_locale]=1
+        else
+            echo -e "Already done\n"
+        fi
+    fi
+    save
+}   
+
+# Network
+configure_network()
+{
+    if [ $ABORT == 0 ]
+    then
+        echo -e "-------------------"
+        echo -e "Configuring Network"
+        echo -e "-------------------\n"
+
+        if [ ${PROGRESS_ARRAY[configure_network]} == 0 ]
+        then
+            echo "ElliotYoga" > /etc/hostname
+            # Save progress
+            PROGRESS_ARRAY[configure_network]=1
+        else
+            echo -e "Already done\n"
+        fi
+    fi
+    save
+}
+
+prepare_boot_loader()
+{
+    if [ $ABORT == 0 ]
+    then
+        echo -e "------------------------------"
+        echo -e "Preparing boot loader for LUKS"
+        echo -e "----------------------------\n"
+
+        if [ ${PROGRESS_ARRAY[prepare_boot_loader]} == 0 ]
+        then
+            # Get third partition name 
+            PART3=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/, a){print a[1]}' | sed -n '3p')
+
+            # Catch error
+            if [ $? -ne 0 ]
+            then 
+                echo -e "--- ERROR: Could not find third partition name. ---\n"
+                ABORT=1
+            else
+                echo -e "--- 3rd Partition name is $PART3 ---\n"
+            fi
+            # Save progress
+            PROGRESS_ARRAY[prepare_boot_loader]=1
+        else
+            echo -e "Already done\n"
+        fi
+    fi
+    save
+}
 ##############################################
 # Main
 ##############################################
@@ -407,3 +551,7 @@ partition_drive
 encrypt_root_partition
 format_partitions
 create_swap_file
+set_up_arch
+configure_locale
+configure_network
+prepare_boot_loader
