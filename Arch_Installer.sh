@@ -416,7 +416,6 @@ set_up_arch()
         then
             # Install Base Packages
             pacstrap -i /mnt base base-devel efibootmgr grub linux linux-firmware networkmanager sudo vi vim bash-completion nano
-
             # Catch error
             if [ $? -ne 0 ]
             then 
