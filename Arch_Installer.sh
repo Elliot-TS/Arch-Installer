@@ -415,7 +415,7 @@ set_up_arch()
         if [ ${PROGRESS_ARRAY[set_up_arch]} == 0 ]
         then
             # Install Base Packages
-            pacstrap -i /mnt base base-devel efibootmanager grub linux linux-firmware networkmanager sudo vi vim bash-completion nano
+            pacstrap -i /mnt base base-devel efibootmgr grub linux linux-firmware networkmanager sudo vi vim bash-completion nano
 
             # Catch error
             if [ $? -ne 0 ]
