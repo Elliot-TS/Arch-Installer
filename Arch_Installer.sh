@@ -349,7 +349,8 @@ format_partitions()
                     echo -e "--- ($PART1, $PART2, and luks_root) ---"
                     echo -e "--- Press enter to continue ---\n"
                     read wait
-                    mkfs.vfat -n "EFI System Partition" /dev/$PART1
+                    #mkfs.vfat -n "EFI System Partition" /dev/$PART1
+                    mkfs.fat -F 32 /dev/$PART1
                     mkfs.ext4 -L boot /dev/$PART2
                     mkfs.ext4 -L root /dev/mapper/luks_root
 
@@ -532,6 +533,7 @@ prepare_boot_loader()
         if [ ${PROGRESS_ARRAY[prepare_boot_loader]} == 0 ]
         then
             # Get third partition name 
+            PART2=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/, a){print a[1]}' | sed -n '2p')
             PART3=$(sfdisk -d /dev/$DISK_NAME | gawk 'match($0, /^\/dev\/(\S+)/, a){print a[1]}' | sed -n '3p')
 
             # Catch error
@@ -541,6 +543,23 @@ prepare_boot_loader()
                 ABORT=1
             else
                 echo -e "--- 3rd Partition name is $PART3 ---\n"
+                # Replace the line GRUB_CMDLINE_LINUX="" in
+                # /etc/default/grub with
+                # GRUB_CMDLINE_LINUX="cryptdevice=/dev/sda3:luks_root"
+                sed -i "s/GRUB_CMDLINE_LINUX\=.*/GRUB_CMDLINE_LINUX\=\"cryptdevice=\/dev\/$PART3:luks_root\"/g" /etc/default/grub
+
+                # Initramfs
+                # TODO: This adds "encrypt" to the end of the HOOKS line
+                # Make it add it before "filesystem" if it exists
+                echo -e "--- Generating initramfs ---\n"
+                sed 's/HOOKS=(\(.*\))/HOOKS=(\1 encrypt)/' /etc/mkinitcpio.conf
+                mkinitcpio -p linux
+
+                echo -e "--- Installing Boot Loader ---\n"
+                grub-install --boot-directory=/boot --efi-directory=/boot/efi /dev/$PART2
+                grub-mkconfig -o /boot/grub/grub.cfg
+                grub-mkconfig -o /boot/efi/EFI/arch/grub.cfg
+
             fi
             # Save progress
             PROGRESS_ARRAY[prepare_boot_loader]=1
@@ -569,3 +588,4 @@ set_up_arch
 configure_locale
 configure_network
 prepare_boot_loader
+echo -e "\n--- Done.  Now 'exit' and 'reboot' ---\n"
