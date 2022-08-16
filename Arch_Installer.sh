@@ -432,6 +432,8 @@ set_up_arch()
                     ABORT=1
                 else
                     # Change root into new system
+                    PROGRESS_ARRAY[set_up_arch]=1
+                    cp -r . /mnt # copy this directory into /mnt
                     arch-chroot /mnt
 
                     if [ $? -ne 0 ]
@@ -454,29 +456,13 @@ configure_locale()
 {
     if [ $ABORT == 0 ]
     then
-        echo -e "--------------"
-        echo -e "Configure Arch"
-        echo -e "--------------\n"
+        echo -e "----------------"
+        echo -e "Configure Locale"
+        echo -e "----------------\n"
 
         if [ ${PROGRESS_ARRAY[configure_locale]} == 0 ]
         then
             # Time Zone
-            #echo -e "--- Please Select Your Time Zone ---"
-            #old_dir=$(pwd)
-            #cd /usr/share/zoneinfo
-            #Regions=($(ls -d */))
-            #select region in "${Regions[@]}"
-            #do
-                #cd /usr/share/zoneinfo/$region
-                #echo "$region"
-                #Cities=($(ls -d *))
-                #select city in "${Cities[@]}"
-                #do
-                    #echo "/usr/shar/zoneinfo/$region$city"
-                    #ln -sf "/usr/share/zoneinfo/$region$city" /etc/localtime 
-                    #break;
-                #done
-            #done
             ln -sf "/usr/share/zoneinfo/US/Eastern" /etc/localtime
             hwclock --systohc
 
@@ -554,6 +540,10 @@ prepare_boot_loader()
                 echo -e "--- Generating initramfs ---\n"
                 sed 's/HOOKS=(\(.*\))/HOOKS=(\1 encrypt)/' /etc/mkinitcpio.conf
                 mkinitcpio -p linux
+
+                # Root Password
+                echo -e "--- Please Enter your Root Password ---\n"
+                passwd
 
                 echo -e "--- Installing Boot Loader ---\n"
                 grub-install --boot-directory=/boot --efi-directory=/boot/efi /dev/$PART2
