@@ -347,8 +347,6 @@ format_partitions()
                     # TODO: In the future, if you're feeling brave, try the BtrFS for luks_root
                     echo -e "--- Formatting partitions ---"
                     echo -e "--- ($PART1, $PART2, and luks_root) ---"
-                    echo -e "--- Press enter to continue ---\n"
-                    read wait
                     #mkfs.vfat -n "EFI System Partition" /dev/$PART1
                     mkfs.fat -F 32 /dev/$PART1
                     mkfs.ext4 -L boot /dev/$PART2
@@ -535,10 +533,8 @@ prepare_boot_loader()
                 sed -i "s/GRUB_CMDLINE_LINUX\=.*/GRUB_CMDLINE_LINUX\=\"cryptdevice=\/dev\/$PART3:luks_root\"/g" /etc/default/grub
 
                 # Initramfs
-                # TODO: This adds "encrypt" to the end of the HOOKS line
-                # Make it add it before "filesystem" if it exists
                 echo -e "--- Generating initramfs ---\n"
-                sed 's/HOOKS=(\(.*\))/HOOKS=(\1 encrypt)/' /etc/mkinitcpio.conf
+                sed 's/HOOKS=(\(.*\)\(filesystems.*\)/HOOKS=(\1encrypt \2/' /etc/mkinitcpio.conf
                 mkinitcpio -p linux
 
                 # Root Password
@@ -578,4 +574,4 @@ set_up_arch
 configure_locale
 configure_network
 prepare_boot_loader
-echo -e "\n--- Done.  Now 'exit' and 'reboot' ---\n"
+#echo -e "\n--- Done.  Now 'exit' and 'reboot' ---\n"
