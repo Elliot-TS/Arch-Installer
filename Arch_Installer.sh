@@ -295,11 +295,12 @@ encrypt_root_partition()
                 echo -e "--- Encrypting partition $PARTITION_NAME ---\n"
                 cryptsetup luksFormat -v -s 512 -h sha512 /dev/$PARTITION_NAME
                 # Repeat incase it fails (i.e. wrong password)
-                while [ $? -ne 0 ]
-                do
-                    echo -e "--- Encrypting partition $PARTITION_NAME failed.  Trying again. ---\n"
-                    cryptsetup luksFormat -v -s 512 -h sha512 /dev/$PARTITION_NAME
-                done
+
+                if [ $? -ne 0 ]
+                then
+                    ABORT=1
+                    exit
+                fi
 
                 echo -e "--- Opening encrypted partition ---\n"
                 cryptsetup open /dev/$PARTITION_NAME luks_root
@@ -347,8 +348,8 @@ format_partitions()
                     # TODO: In the future, if you're feeling brave, try the BtrFS for luks_root
                     echo -e "--- Formatting partitions ---"
                     echo -e "--- ($PART1, $PART2, and luks_root) ---"
-                    #mkfs.vfat -n "EFI System Partition" /dev/$PART1
-                    mkfs.fat -F 32 /dev/$PART1
+                    mkfs.vfat -n "EFI" /dev/$PART1
+                    #mkfs.fat -F 32 /dev/$PART1
                     mkfs.ext4 -L boot /dev/$PART2
                     mkfs.ext4 -L root /dev/mapper/luks_root
 
