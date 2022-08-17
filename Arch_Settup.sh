@@ -79,6 +79,49 @@ skeleton_function()
     save
 }
 
+# Get Disk Name
+DISK_NAME=sdn
+get_disk_name()
+{
+    if [ $ABORT == 0 ]
+    then
+        echo -e "-------------"
+        echo -e "Get Disk Name"
+        echo -e "-------------\n"
+
+
+        if [ ${PROGRESS_ARRAY[get_disk_name]} == 0 ]
+        then
+            # Get disk name 
+            if [[ $(lsblk | grep nvme0n1) != "" ]]
+            then
+                echo -e "--- Disk name is nvme0n1 ---\n"
+                DISK_NAME=nvme0n1
+            elif [[ $(lsblk | grep mmcbkl0) != "" ]]
+            then
+                echo -e "--- Disk name is mmcblk0 ---\n"
+                echo -e "--- ERROR: mmcblk0 is not currently supported.  Aborting ---\n"
+                ABORT=1
+                DISK_NAME=mmcblk0
+            elif [[ $(lsblk | grep sda) != "" ]]
+            then
+                echo -e "--- Disk name is sda ---\n"
+                DISK_NAME=sda
+            else
+                echo -e "--- ERROR: Disk name not found. ---\n"
+                ABORT=1
+            fi
+
+            # Save progress
+            PROGRESS_ARRAY[get_disk_name]=1
+        else
+            echo -e "Already done\n"
+        fi
+    fi
+    save
+}
+
+
 # Configure Arch
 configure_locale()
 {
