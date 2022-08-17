@@ -166,6 +166,7 @@ configure_network()
         if [ ${PROGRESS_ARRAY[configure_network]} == 0 ]
         then
             echo "ElliotYoga" > /etc/hostname
+            echo -e "127.0.0.1 localhost\n::1 localhost\n127.0.1.1 ElliotYoga.localhost ElliotYoga" >> /etc/hosts
             # Save progress
             PROGRESS_ARRAY[configure_network]=1
         else
